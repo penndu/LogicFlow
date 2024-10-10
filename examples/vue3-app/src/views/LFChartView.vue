@@ -1,12 +1,12 @@
 <template>
   <div class="w-full h-full">
     <div ref="container" class="flow w-full h-full overflow-hidden" />
-    <!-- <TeleportContainer />-->
+    <TeleportContainer :flow-id="flowId" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import { getTeleport } from '@logicflow/vue-node-registry'
 import '@logicflow/core/lib/style/index.css'
 import LinkChart from '@/components/chart/linkChart'
@@ -20,6 +20,10 @@ const props = defineProps<IProps>()
 const TeleportContainer = getTeleport()
 const container = ref()
 const graphData = ref<IGraphData>()
+
+const flowId = ref('')
+
+let linkChart: LinkChart
 
 onMounted(() => {
   graphData.value = {
@@ -203,10 +207,16 @@ onMounted(() => {
       }
     ]
   }
-  LinkChart.create({
+  linkChart = LinkChart.create({
     container: container.value,
     graphData: graphData.value
   })
+  flowId.value = linkChart.flowId!
+})
+
+onUnmounted(() => {
+  // 非KeepAlive模式下应该主动触发destroy()方法触发LogicFlow.clearData()
+  linkChart && linkChart.destroy()
 })
 </script>
 
